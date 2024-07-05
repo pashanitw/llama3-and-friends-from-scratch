@@ -13,6 +13,9 @@ This repository is dedicated to implementing state-of-the-art language learning 
 ## Project Status
 :construction: **Work in Progress** :construction:
 
+## Inference Demonstration
+Check out the [Inference Notebook](inference.ipynb) for llama3 model inference.
+
 This project is currently under active development. We are in the process of adding more models and enhancing our training methods. Please note that changes may occur frequently as we improve and expand our implementations.
 
 ## Stay Tuned
