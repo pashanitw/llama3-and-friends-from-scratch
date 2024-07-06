@@ -4,10 +4,10 @@
 This repository is dedicated to implementing state-of-the-art language learning models (LLMs) from scratch. Our focus is not only on building these models but also on demonstrating various advanced training techniques.
 
 ### Current Techniques Planning to Include:
-- **SFT (Sparse Fine-Tuning)**
+- **SFT (Supervised Fine-Tuning)**
 - **Instruction Fine-tuning**
 - **RLHF (Reinforcement Learning with Human Feedback)**
-- **DPO (Differential Privacy Optimization)**
+- **DPO (Direct Preference Optimization)**
 - **LORA (Low-Rank Adaptation of Large Language Models)**
 
 ## Project Status
