@@ -1,4 +1,4 @@
-# Implementation of llama3 and friends from scrach
+# Implementation of llama3 and friends from scratch
 ![Work in Progress](https://img.shields.io/badge/status-work_in_progress-orange)
 ## Introduction
 This repository is dedicated to implementing state-of-the-art language learning models (LLMs) from scratch. Our focus is not only on building these models but also on demonstrating various advanced training techniques.
