@@ -1,6 +1,7 @@
 import torch
 from typing import Dict
 import re
+
 # state dict key mappings from Meta's format to Our implementation
 _FROM_META = {
     "tok_embeddings.weight": "tok_embeddings.weight",
@@ -16,6 +17,7 @@ _FROM_META = {
     "layers.{}.feed_forward.w2.weight": "layers.{}.mlp.down_proj.weight",
     "layers.{}.feed_forward.w3.weight": "layers.{}.mlp.up_proj.weight",
 }
+
 
 def _get_mapped_key(key: str, mapping_dict: Dict[str, str]) -> str:
     try:
@@ -52,6 +54,7 @@ def convert_weights(state_dict: Dict[str, torch.Tensor]) -> Dict[str, torch.Tens
 
     return converted_state_dict
 
+
 def load_and_print_keys(file_path):
     """
     Load a PyTorch model's state dictionary from the given file path and print its keys.
@@ -61,14 +64,18 @@ def load_and_print_keys(file_path):
     """
     try:
         # Open the file in binary mode to check the first few bytes
-        with open(file_path, 'rb') as file:
+        with open(file_path, "rb") as file:
             magic = file.read(2)
-            if not (magic == b'PK' or magic.startswith(b'\x80\x02')):  # Check for ZIP or pickle headers
-                print("File does not start with expected magic numbers for a PyTorch model.")
+            if not (
+                magic == b"PK" or magic.startswith(b"\x80\x02")
+            ):  # Check for ZIP or pickle headers
+                print(
+                    "File does not start with expected magic numbers for a PyTorch model."
+                )
                 return None
 
         # Proceed to load the file assuming it's correctly formatted
-        state_dict = torch.load(file_path, map_location=torch.device('cpu'))
+        state_dict = torch.load(file_path, map_location=torch.device("cpu"))
         print("Keys in the state dictionary:")
         for key in state_dict.keys():
             print(key)
@@ -76,4 +83,3 @@ def load_and_print_keys(file_path):
     except Exception as e:
         print(f"Failed to load the model from {file_path}. Error: {str(e)}")
         return None
-
