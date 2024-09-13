@@ -88,7 +88,7 @@
 - Parameter-efficient Model Tuning
   - Low-rank Adaptation Methods
 
-# Chapter 8: Human Alignments
+# Human Alignments
 - Reinforcement Learning Based on Human Feedback
   - Collection of Human Feedback Data
   - Reward Model Training
