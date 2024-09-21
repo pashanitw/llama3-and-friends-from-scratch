@@ -11,6 +11,7 @@ from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
 )
 from torch import nn
 from typing import Dict, Generator
+import bitsandbytes
 
 logger = utils.get_logger("INFO")
 
@@ -78,6 +79,32 @@ def set_activation_checkpointing(
         auto_wrap_policy = ModuleWrapPolicy(auto_wrap_policy)
 
     apply_activation_checkpointing(model, auto_wrap_policy)
+
+
+def get_optimizer(optimizer):
+    optimizer_dict = {
+        "bitsandbytes.optim.PagedAdamW": bitsandbytes.optim.PagedAdamW,
+        "AdamW": torch.optim.AdamW,
+        "torch.optim.AdamW": torch.optim.AdamW,
+    }
+
+    if optimizer in optimizer_dict:
+        return optimizer_dict[optimizer]
+    else:
+        raise RuntimeError(f"given optimizer '{optimizer}' is not supported")
+
+
+def register_bwd_hook(
+    model: TransformerDecoder,
+    optim_dict: Dict[torch.nn.Parameter, torch.optim.Optimizer],
+):
+
+    def optim_step(param) -> None:
+        optim_dict[param].step()
+        optim_dict[param].zero_grad()
+
+    for p in model.parameters():
+        p.register_post_accumulate_grad_hook(optim_step)
 
 
 # file_path = 'Meta-Llama-3-8B-Instruct/consolidated.00.pth'  # Update this path

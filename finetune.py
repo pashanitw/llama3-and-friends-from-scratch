@@ -9,6 +9,8 @@ from typer.cli import utils_app
 import common as utils
 import training as tr
 from attention import CasualSelfAttention
+from llama3_tokenizer import Tokenizer
+from training import get_optimizer
 
 logger = utils_app.get_logger("DEBUG")
 
@@ -30,8 +32,12 @@ class FullFineTuning(utils.BaseFineTuning):
 
     def setup(self) -> None:
         training_args = self.training_args
-
         # step 1: Load checkpoint
+        self.model = self._setup_model()
+
+        # step 2: load tokenizer
+        # Todo: add configuration for this later
+        tokenizer = Tokenizer(model_path="./Meta-Llama-3-8B-Instruct/tokenizer.model")
 
         pass
 
@@ -49,8 +55,18 @@ class FullFineTuning(utils.BaseFineTuning):
 
         return model
 
+    def _setup_optimizer(self):
+        training_args = self.training_args
+        if training_args.optimizer_in_bwd:
+            optim_dict = {p: tr.get_optimizer([p]) for p in self.model.parameters()}
+            tr.register_bwd_hook(self.model, optim_dict)
 
-# Usage example
+        else:
+            optimizer = get_optimizer(training_args.optimizer)
+            if optimizer:
+                optimizer = optimizer(self.model.parameters())
+
+            return optimizer
 
 
 def main(args: utils.TrainingArgs):
