@@ -143,6 +143,7 @@ class TrainingArgs:
     optimizer_in_bwd: bool = True
     max_steps_per_epoch: Optional[int] = None
     gradient_accumulation_steps: int = 1
+    clip_grad_norm: Optional[float] = None
     compile: bool = False
 
     # Hardware
@@ -177,4 +178,50 @@ class TrainingArgs:
         return cls(**vars(args))
 
 
+def verify_bf16_support() -> bool:
+    """
+    Check that bf16 is available on this hardware. Requirements:
+        - CUDA is available and supports bf16
+            - CUDA version >= 11
+            - CUDA compute capability >= 8
+        - NCCL is available and version >= 2.10
 
+    Returns:
+        bool: True if bf16 is available, False otherwise.
+
+    """
+    return (
+        torch.cuda.is_available()
+        and torch.cuda.is_bf16_supported()
+        and torch.distributed.is_nccl_available()
+        and torch.cuda.nccl.version() >= (2, 10)
+    )
+
+
+
+import torch
+from typing import Optional
+
+VALID_DTYPES = {'fp16', 'bf16', 'fp32', 'fp64'}
+
+
+
+def get_dtype(dtype: Optional[str] = None, device: Optional[torch.device] = None) -> torch.dtype:
+    if dtype is None:
+        return torch.float32
+
+    dtype = dtype.lower()
+    if dtype not in VALID_DTYPES:
+        raise ValueError(f"Unsupported dtype: {dtype}. Must be one of {', '.join(VALID_DTYPES)}.")
+
+    # Map abbreviated format to full name
+    dtype_map = {'fp16': 'float16', 'bf16': 'bfloat16', 'fp32': 'float32', 'fp64': 'float64'}
+    full_dtype_name = dtype_map[dtype]
+
+    torch_dtype = getattr(torch, full_dtype_name)
+
+    if torch_dtype == torch.bfloat16 and device != torch.device("cpu"):
+        if not verify_bf16_support():
+            raise RuntimeError("bf16 precision not supported on this hardware")
+
+    return torch_dtype
