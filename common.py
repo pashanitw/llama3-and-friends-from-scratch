@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional
 import torch
 from typing import Optional
 
+
 @dataclass
 class BaseFineTuning:
     """
@@ -70,19 +71,24 @@ def get_device() -> torch.device:
     device = torch.device(device)
 
     if device.type == "cuda":
-        local_rank = torch.distributed.get_rank() if torch.distributed.is_initialized() else 0
+        local_rank = (
+            torch.distributed.get_rank() if torch.distributed.is_initialized() else 0
+        )
 
         if device.index is None:
             device = torch.device("cuda", index=local_rank)
 
         if device.index >= torch.cuda.device_count():
-            raise RuntimeError(f"The local rank {local_rank} is larger than the available devices {torch.cuda.device_count()}.")
+            raise RuntimeError(
+                f"The local rank {local_rank} is larger than the available devices {torch.cuda.device_count()}."
+            )
 
         torch.cuda.set_device(device)
 
         if torch.distributed.is_initialized() and device.index != local_rank:
-            raise RuntimeError(f"The device rank {device.index} is does not match the local rank {local_rank}.")
-
+            raise RuntimeError(
+                f"The device rank {device.index} is does not match the local rank {local_rank}."
+            )
 
     # validate the device availability
     try:
@@ -102,7 +108,7 @@ def get_logger(level: Optional[str] = "INFO") -> logging.Logger:
     logger = logging.getLogger()
     if not logger.handlers:
         handler = logging.StreamHandler()
-        formatter = logging.Formatter('%(levelname)s:%(name)s:%(message)s')
+        formatter = logging.Formatter("%(levelname)s:%(name)s:%(message)s")
         handler.setFormatter(formatter)
         logger.addHandler(handler)
 
@@ -166,7 +172,11 @@ class TrainingArgs:
             if field_type == Optional[int]:
                 parser.add_argument(f"--{field_name}", type=int, default=default)
             elif field_type == bool:
-                parser.add_argument(f"--{field_name}", type=lambda x: x.lower() == 'true', default=default)
+                parser.add_argument(
+                    f"--{field_name}",
+                    type=lambda x: x.lower() == "true",
+                    default=default,
+                )
             elif field_type == Path:
                 parser.add_argument(f"--{field_name}", type=Path, default=default)
             elif field_type == float:
@@ -198,24 +208,31 @@ def verify_bf16_support() -> bool:
     )
 
 
-
 import torch
 from typing import Optional
 
-VALID_DTYPES = {'fp16', 'bf16', 'fp32', 'fp64'}
+VALID_DTYPES = {"fp16", "bf16", "fp32", "fp64"}
 
 
-
-def get_dtype(dtype: Optional[str] = None, device: Optional[torch.device] = None) -> torch.dtype:
+def get_dtype(
+    dtype: Optional[str] = None, device: Optional[torch.device] = None
+) -> torch.dtype:
     if dtype is None:
         return torch.float32
 
     dtype = dtype.lower()
     if dtype not in VALID_DTYPES:
-        raise ValueError(f"Unsupported dtype: {dtype}. Must be one of {', '.join(VALID_DTYPES)}.")
+        raise ValueError(
+            f"Unsupported dtype: {dtype}. Must be one of {', '.join(VALID_DTYPES)}."
+        )
 
     # Map abbreviated format to full name
-    dtype_map = {'fp16': 'float16', 'bf16': 'bfloat16', 'fp32': 'float32', 'fp64': 'float64'}
+    dtype_map = {
+        "fp16": "float16",
+        "bf16": "bfloat16",
+        "fp32": "float32",
+        "fp64": "float64",
+    }
     full_dtype_name = dtype_map[dtype]
 
     torch_dtype = getattr(torch, full_dtype_name)
